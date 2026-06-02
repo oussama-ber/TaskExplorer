@@ -26,10 +26,12 @@ public class GetTasksByGoalQueryHandler : IRequestHandler<GetTasksByGoalQuery, L
                 Title = t.Title,
                 Description = t.Description,
                 Completed = t.Completed,
+                CompletedAt = t.CompletedAt,
                 Priority = t.Priority.ToString(),
                 DueDate = t.DueDate,
                 StartTime = t.StartTime,
                 EndTime = t.EndTime,
+                Category = t.Category,
                 GoalId = t.GoalId
             })
             .ToListAsync(cancellationToken);
@@ -42,9 +44,11 @@ public class TaskDto
     public string Title { get; set; } = string.Empty;
     public string? Description { get; set; }
     public bool Completed { get; set; }
+    public DateTime? CompletedAt { get; set; }
     public string Priority { get; set; } = "MEDIUM";
     public DateTime? DueDate { get; set; }
     public string? StartTime { get; set; }
     public string? EndTime { get; set; }
+    public string Category { get; set; } = "General";
     public Guid GoalId { get; set; }
 }

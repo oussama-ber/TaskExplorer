@@ -5,6 +5,7 @@ using TaskExplorer.Application.Tasks.Commands.CreateTask;
 using TaskExplorer.Application.Tasks.Commands.UpdateTask;
 using TaskExplorer.Application.Tasks.Commands.DeleteTask;
 using TaskExplorer.Application.Tasks.Queries.GetTasksByGoal;
+using TaskExplorer.Application.Tasks.Queries.GetAllTasks;
 
 namespace TaskExplorer.API.Controllers;
 
@@ -18,6 +19,12 @@ public class TasksController : ControllerBase
     public TasksController(IMediator mediator)
     {
         _mediator = mediator;
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<List<TaskDto>>> GetAll()
+    {
+        return Ok(await _mediator.Send(new GetAllTasksQuery()));
     }
 
     [HttpGet("goal/{goalId}")]

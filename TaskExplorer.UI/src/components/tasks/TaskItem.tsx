@@ -7,9 +7,10 @@ import { ActionsMenu } from '../common/ActionsMenu';
 
 interface TaskItemProps {
     task: Task;
+    onToggle?: () => void;
 }
 
-export const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
+export const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle }) => {
     const { toggleTaskCompletion, viewMode, openEditTaskModal, deleteTask } = useAppStore();
 
     const isComfortable = viewMode === 'comfortable';
@@ -29,7 +30,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
                 <input
                     type="checkbox"
                     checked={task.completed}
-                    onChange={() => toggleTaskCompletion(task.id)}
+                    onChange={() => onToggle ? onToggle() : toggleTaskCompletion(task.id)}
                     className="peer appearance-none w-5 h-5 border-2 border-gray-300 dark:border-gray-600 rounded cursor-pointer checked:bg-primary checked:border-primary transition-colors bg-white dark:bg-dark-background"
                 />
                 <Check

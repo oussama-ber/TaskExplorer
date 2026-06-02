@@ -14,8 +14,9 @@ export const CreateTaskModal: React.FC = () => {
     const [dueDate, setDueDate] = useState('');
     const [estimatedTime, setEstimatedTime] = useState('');
     const [tag, setTag] = useState('');
+    const [category, setCategory] = useState('General');
     const [startTime, setStartTime] = useState('');
-    const [errors, setErrors] = useState<{ title?: string; goalId?: string }>({});
+    const [errors, setErrors] = useState<{ title?: string; goalId?: string; category?: string }>({});
 
     const { user } = useAppStore();
 
@@ -153,6 +154,7 @@ export const CreateTaskModal: React.FC = () => {
                     setDueDate(taskToEdit.dueDate || '');
                     setEstimatedTime(taskToEdit.estimatedTime || '');
                     setTag(taskToEdit.tag || '');
+                    setCategory(taskToEdit.category || 'General');
                     setStartTime(taskToEdit.startTime || '');
                 }
             } else {
@@ -162,6 +164,7 @@ export const CreateTaskModal: React.FC = () => {
                 setDueDate('');
                 setEstimatedTime('');
                 setTag('');
+                setCategory('General');
                 setStartTime('');
                 setPriority('MEDIUM');
                 if (preselectedGoalId) {
@@ -184,12 +187,15 @@ export const CreateTaskModal: React.FC = () => {
         e.preventDefault();
 
         // Validation
-        const newErrors: { title?: string; goalId?: string } = {};
+        const newErrors: { title?: string; goalId?: string; category?: string } = {};
         if (!title.trim()) {
             newErrors.title = 'Title is required';
         }
         if (!selectedGoalId) {
             newErrors.goalId = 'Goal is required';
+        }
+        if (!category.trim()) {
+            newErrors.category = 'Category is required';
         }
 
         if (Object.keys(newErrors).length > 0) {
@@ -206,6 +212,7 @@ export const CreateTaskModal: React.FC = () => {
             estimatedTime: estimatedTime.trim() || undefined,
             tag: tag.trim() || undefined,
             startTime: startTime || undefined,
+            category: category.trim(),
         };
 
         if (editingTaskId) {
@@ -214,7 +221,6 @@ export const CreateTaskModal: React.FC = () => {
             addTask({
                 ...taskData,
                 completed: false,
-                category: 'General',
                 notificationsEnabled: true,
                 isEnabled: true,
             });
@@ -226,6 +232,7 @@ export const CreateTaskModal: React.FC = () => {
         setDueDate('');
         setEstimatedTime('');
         setTag('');
+        setCategory('General');
         setStartTime('');
         setPriority('MEDIUM');
         setErrors({});
@@ -364,6 +371,32 @@ export const CreateTaskModal: React.FC = () => {
                             className="w-full px-4 py-2.5 border border-light-gray dark:border-dark-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder:text-gray-400 bg-white dark:bg-dark-background text-text-primary dark:text-dark-text-primary"
                             placeholder="e.g., urgent, research, etc."
                         />
+                    </div>
+
+                    {/* Category (required) */}
+                    <div>
+                        <label className="block text-sm font-medium text-text-secondary dark:text-dark-text-secondary mb-1">
+                            Category <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                            value={category}
+                            onChange={(e) => {
+                                setCategory(e.target.value);
+                                if (errors.category) setErrors({ ...errors, category: undefined });
+                            }}
+                            className={`w-full px-4 py-2.5 border ${errors.category ? 'border-red-500' : 'border-light-gray dark:border-dark-border'} rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none bg-white dark:bg-dark-background text-text-primary dark:text-dark-text-primary`}
+                        >
+                            <option value="General">General</option>
+                            <option value="Work">Work</option>
+                            <option value="Personal">Personal</option>
+                            <option value="Health & Fitness">Health &amp; Fitness</option>
+                            <option value="Finance">Finance</option>
+                            <option value="Learning">Learning</option>
+                            <option value="Personal Development">Personal Development</option>
+                            <option value="Family">Family</option>
+                            <option value="Hobbies">Hobbies</option>
+                        </select>
+                        {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category}</p>}
                     </div>
 
                     {/* Due Date */}

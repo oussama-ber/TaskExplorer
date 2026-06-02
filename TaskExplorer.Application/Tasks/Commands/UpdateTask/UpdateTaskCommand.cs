@@ -12,7 +12,8 @@ public record UpdateTaskCommand(
     string Priority,
     DateTime? DueDate,
     string? StartTime,
-    string? EndTime) : IRequest;
+    string? EndTime,
+    string Category) : IRequest;
 
 public class UpdateTaskCommandHandler : IRequestHandler<UpdateTaskCommand>
 {
@@ -34,11 +35,19 @@ public class UpdateTaskCommandHandler : IRequestHandler<UpdateTaskCommand>
 
         entity.Title = request.Title;
         entity.Description = request.Description;
-        entity.Completed = request.Completed;
         entity.Priority = Enum.Parse<TaskPriority>(request.Priority, true);
         entity.DueDate = request.DueDate;
         entity.StartTime = request.StartTime;
         entity.EndTime = request.EndTime;
+        entity.Category = string.IsNullOrWhiteSpace(request.Category) ? "General" : request.Category;
+
+        // Track when a task is marked complete (only stamp once)
+        if (request.Completed && !entity.Completed)
+            entity.CompletedAt = DateTime.UtcNow;
+        else if (!request.Completed)
+            entity.CompletedAt = null;
+
+        entity.Completed = request.Completed;
 
         await _context.SaveChangesAsync(cancellationToken);
     }

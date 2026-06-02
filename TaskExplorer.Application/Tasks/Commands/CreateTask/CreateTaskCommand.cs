@@ -11,6 +11,7 @@ public record CreateTaskCommand(
     DateTime? DueDate,
     string? StartTime,
     string? EndTime,
+    string Category,
     Guid GoalId) : IRequest<Guid>;
 
 public class CreateTaskCommandHandler : IRequestHandler<CreateTaskCommand, Guid>
@@ -32,6 +33,7 @@ public class CreateTaskCommandHandler : IRequestHandler<CreateTaskCommand, Guid>
             DueDate = request.DueDate,
             StartTime = request.StartTime,
             EndTime = request.EndTime,
+            Category = string.IsNullOrWhiteSpace(request.Category) ? "General" : request.Category,
             GoalId = request.GoalId
         };
 

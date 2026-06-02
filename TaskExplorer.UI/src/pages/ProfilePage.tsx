@@ -1,9 +1,22 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { User, Mail, Briefcase, MapPin, Target, CheckCircle2, TrendingUp, Zap } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
+import { habitsApi } from '../services/api';
+import type { HabitScore } from '../types';
+import { HabitScoreSection } from '../components/profile/HabitScoreSection';
 
 export const ProfilePage: React.FC = () => {
     const { user, goals, tasks } = useAppStore();
+    const [habitScore, setHabitScore] = useState<HabitScore | null>(null);
+    const [habitLoading, setHabitLoading] = useState(true);
+
+    useEffect(() => {
+        setHabitLoading(true);
+        habitsApi.getScore()
+            .then(res => setHabitScore(res.data))
+            .catch(() => {/* silently fail */})
+            .finally(() => setHabitLoading(false));
+    }, []);
 
     const completedTasks = tasks.filter(t => t.completed).length;
     const totalTasks = tasks.length;
@@ -12,10 +25,12 @@ export const ProfilePage: React.FC = () => {
 
     const kpis = [
         { label: 'Goals Active', value: activeGoals, icon: <Target className="text-blue-500" />, color: 'bg-blue-50 dark:bg-blue-900/20' },
-        { label: 'Tasks Finished', value: completedTasks, icon: <CheckCircle2 className="text-green-500" />, color: 'bg-green-50 dark:bg-green-900/20' },
+        { label: 'Tasks Finished', value: habitScore?.totalTasksCompleted ?? completedTasks, icon: <CheckCircle2 className="text-green-500" />, color: 'bg-green-50 dark:bg-green-900/20' },
         { label: 'Success Rate', value: `${taskSuccessRate}%`, icon: <TrendingUp className="text-purple-500" />, color: 'bg-purple-50 dark:bg-purple-900/20' },
-        { label: 'Day Streak', value: '12', icon: <Zap className="text-orange-500" />, color: 'bg-orange-50 dark:bg-orange-900/20' },
+        { label: 'Day Streak', value: habitScore?.streak ?? '—', icon: <Zap className="text-orange-500" />, color: 'bg-orange-50 dark:bg-orange-900/20' },
     ];
+
+    if (!user) return null;
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500 max-w-5xl mx-auto">
@@ -48,7 +63,7 @@ export const ProfilePage: React.FC = () => {
                             </div>
                             <div className="flex items-center gap-3 text-text-secondary dark:text-dark-text-secondary bg-gray-50 dark:bg-gray-800/40 p-3 rounded-xl border border-light-gray dark:border-dark-border">
                                 <User size={18} />
-                                <span className="text-sm">@alexjohnson</span>
+                                <span className="text-sm">@{user.name?.toLowerCase().replace(/\s+/g, '')}</span>
                             </div>
                             <div className="flex items-center gap-3 text-text-secondary dark:text-dark-text-secondary bg-gray-50 dark:bg-gray-800/40 p-3 rounded-xl border border-light-gray dark:border-dark-border">
                                 <Briefcase size={18} />
@@ -77,6 +92,11 @@ export const ProfilePage: React.FC = () => {
                     ))}
                 </div>
 
+                {/* Habit Score */}
+                <div className="bg-white dark:bg-dark-card-bg rounded-2xl border border-light-gray dark:border-dark-border shadow-sm p-6">
+                    <HabitScoreSection data={habitScore} loading={habitLoading} />
+                </div>
+
                 {/* Bio & Details */}
                 <div className="grid md:grid-cols-3 gap-6">
                     <div className="md:col-span-2 bg-white dark:bg-dark-card-bg p-8 rounded-2xl border border-light-gray dark:border-dark-border shadow-sm">
@@ -84,7 +104,7 @@ export const ProfilePage: React.FC = () => {
                             About Me
                         </h3>
                         <p className="text-text-secondary dark:text-dark-text-secondary leading-relaxed">
-                            Passionate about creating intuitive and beautiful user experiences. I love organizing my life with TaskExplorer and helping others do the same. When I'm not designing, you can find me hiking or reading sci-fi novels. obsessed with productivity Hacks and minimalist design.
+                            Passionate about creating intuitive and beautiful user experiences. I love organizing my life with TaskExplorer and helping others do the same. When I'm not designing, you can find me hiking or reading sci-fi novels. Obsessed with productivity hacks and minimalist design.
                         </p>
                     </div>
 

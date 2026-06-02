@@ -1,0 +1,34 @@
+# .gitignore for TaskExplorer (Monorepo with .NET and React)
+
+# macOS
+.DS_Store
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+.idea/
+.nuget/
+
+# Node.js / React
+node_modules/
+dist/
+build/
+.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+.env
+*.env.local
+
+# Secrets
+usersecrets.json
+
+# Docker
+.dockerignore

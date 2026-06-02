@@ -1,0 +1,9 @@
+{
+    "name": "task-explorer-root",
+    "private": true,
+    "scripts": {
+        "dev": "npm run dev --prefix TaskExplorer.UI",
+        "build": "npm run build --prefix TaskExplorer.UI",
+        "api": "dotnet run --project TaskExplorer.API"
+    }
+}

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { useAuthStore } from '../store/useAuthStore';
-import type { Goal, Task, RoutineBlock, User } from '../types';
+import type { Goal, Task, RoutineBlock, User, HabitScore } from '../types';
 
 const API_BASE_URL = 'http://localhost:5255/api';
 
@@ -102,6 +102,7 @@ export const goalsApi = {
 };
 
 export const tasksApi = {
+    getAll: () => api.get<Task[]>('/tasks'),
     getByGoal: (goalId: string) => api.get<Task[]>(`/tasks/goal/${goalId}`),
     create: (task: Omit<Task, 'id'>) => api.post<string>('/tasks', task),
     update: (id: string, task: Task) => api.put(`/tasks/${id}`, task),
@@ -139,6 +140,10 @@ export const dashboardApi = {
 export const usersApi = {
     getCurrentUser: () => api.get<User>('/users/me'),
     completeOnboarding: () => api.post<boolean>('/users/complete-onboarding'),
+};
+
+export const habitsApi = {
+    getScore: () => api.get<HabitScore>('/habits/score'),
 };
 
 export default api;

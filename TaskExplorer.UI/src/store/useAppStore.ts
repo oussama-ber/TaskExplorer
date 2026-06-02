@@ -19,6 +19,7 @@ interface AppState {
     fetchUser: () => Promise<void>;
     fetchGoals: () => Promise<void>;
     fetchTasks: (goalId: string) => Promise<void>;
+    fetchAllTasks: () => Promise<void>;
     fetchRoutines: () => Promise<void>;
     fetchDashboardStats: () => Promise<void>;
 
@@ -138,6 +139,16 @@ export const useAppStore = create<AppState>()(
                 }
             },
 
+            fetchAllTasks: async () => {
+                set({ isLoading: true, error: null });
+                try {
+                    const response = await tasksApi.getAll();
+                    set({ tasks: response.data, isLoading: false });
+                } catch (err: any) {
+                    set({ error: err.message, isLoading: false });
+                }
+            },
+
             fetchRoutines: async () => {
                 set({ isLoading: true, error: null });
                 try {
@@ -194,7 +205,7 @@ export const useAppStore = create<AppState>()(
             addTask: async (newTask) => {
                 try {
                     await tasksApi.create(newTask as Task);
-                    await get().fetchTasks(newTask.goalId);
+                    await get().fetchAllTasks();
                     await get().fetchGoals();
                 } catch (err: any) {
                     set({ error: err.message });
@@ -243,7 +254,7 @@ export const useAppStore = create<AppState>()(
                 const updatedTask = { ...task, ...updates };
                 try {
                     await tasksApi.update(id, updatedTask);
-                    await get().fetchTasks(task.goalId);
+                    await get().fetchAllTasks();
                     await get().fetchGoals();
                 } catch (err: any) {
                     set({ error: err.message });
@@ -255,7 +266,7 @@ export const useAppStore = create<AppState>()(
                 if (!task) return;
                 try {
                     await tasksApi.delete(id);
-                    await get().fetchTasks(task.goalId);
+                    await get().fetchAllTasks();
                     await get().fetchGoals();
                 } catch (err: any) {
                     set({ error: err.message });
@@ -264,7 +275,15 @@ export const useAppStore = create<AppState>()(
 
             openEditTaskModal: (taskId) => set({ isCreateTaskModalOpen: true, editingTaskId: taskId }),
 
-            openGoalDetail: (goalId) => set({ viewingGoalId: goalId }),
+            openGoalDetail: (goalId) => {
+                set({ viewingGoalId: goalId });
+                // If we already have all tasks, no need to re-fetch; just ensure tasks are loaded
+                const currentTasks = get().tasks;
+                const hasTasks = currentTasks.some(t => t.goalId === goalId);
+                if (!hasTasks) {
+                    get().fetchAllTasks();
+                }
+            },
             closeGoalDetail: () => set({ viewingGoalId: null }),
             openTaskDetail: (taskId) => set({ viewingTaskId: taskId }),
             closeTaskDetail: () => set({ viewingTaskId: null }),
@@ -337,7 +356,7 @@ export const useAppStore = create<AppState>()(
                             title,
                             completed: false,
                             priority: 'MEDIUM',
-                            category: goalData.tag || 'General',
+                            category: goalData.category || goalData.tag || 'General',
                             notificationsEnabled: true,
                             isEnabled: true,
                             tag: goalData.tag

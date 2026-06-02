@@ -191,12 +191,14 @@ export const RoutinePage: React.FC = () => {
 
 const AvailabilitySettingsSection: React.FC = () => {
     const { user, updateAvailability } = useAppStore();
-    const settings = user.availability || {
+    const settings = user?.availability || {
         sleepStart: '23:00',
         sleepEnd: '07:00',
         age: 25,
         breakTimeMinutes: 30
     };
+
+    if (!user) return null;
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

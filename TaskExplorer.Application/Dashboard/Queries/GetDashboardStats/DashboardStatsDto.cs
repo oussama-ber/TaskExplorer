@@ -10,6 +10,11 @@ public class DashboardStatsDto
     public int CompletedTasks { get; set; }
     public int PendingTasks { get; set; }
     
+    // Trend vs previous period (positive = better)
+    public int DailyTrend { get; set; }
+    public int WeeklyTrend { get; set; }
+    public int MonthlyTrend { get; set; }
+    
     public List<WeeklyActivityDto> WeeklyActivity { get; set; } = new();
     public List<WorkCapacityDto> WorkCapacity { get; set; } = new();
     

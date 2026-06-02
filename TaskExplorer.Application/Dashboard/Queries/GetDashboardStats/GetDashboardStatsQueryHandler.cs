@@ -16,9 +16,12 @@ public class GetDashboardStatsQueryHandler : IRequestHandler<GetDashboardStatsQu
     public async Task<DashboardStatsDto> Handle(GetDashboardStatsQuery request, CancellationToken cancellationToken)
     {
         var now = DateTime.UtcNow;
-        var startOfDay = now.Date;
+        var startOfToday = now.Date;
+        var startOfYesterday = now.Date.AddDays(-1);
         var startOfWeek = now.Date.AddDays(-(int)now.DayOfWeek);
+        var startOfLastWeek = startOfWeek.AddDays(-7);
         var startOfMonth = new DateTime(now.Year, now.Month, 1);
+        var startOfLastMonth = startOfMonth.AddMonths(-1);
 
         // Get all tasks for the user
         var allTasks = await _context.Tasks
@@ -30,23 +33,33 @@ public class GetDashboardStatsQueryHandler : IRequestHandler<GetDashboardStatsQu
         var completedTasks = allTasks.Count(t => t.Completed);
         var pendingTasks = totalTasks - completedTasks;
 
-        // Calculate time-based counts (tasks created in period)
-        var dailyTasks = allTasks.Count(t => t.Goal.CreatedAt >= startOfDay);
-        var weeklyTasks = allTasks.Count(t => t.Goal.CreatedAt >= startOfWeek);
-        var monthlyTasks = allTasks.Count(t => t.Goal.CreatedAt >= startOfMonth);
+        // Daily: tasks completed today vs yesterday
+        var dailyCount = allTasks.Count(t => t.CompletedAt.HasValue && t.CompletedAt.Value.Date == startOfToday);
+        var yesterdayCount = allTasks.Count(t => t.CompletedAt.HasValue && t.CompletedAt.Value.Date == startOfYesterday);
+        var dailyTrend = dailyCount - yesterdayCount;
+
+        // Weekly: tasks completed this week vs last week
+        var weeklyCount = allTasks.Count(t => t.CompletedAt.HasValue && t.CompletedAt.Value.Date >= startOfWeek);
+        var lastWeekCount = allTasks.Count(t => t.CompletedAt.HasValue && t.CompletedAt.Value.Date >= startOfLastWeek && t.CompletedAt.Value.Date < startOfWeek);
+        var weeklyTrend = weeklyCount - lastWeekCount;
+
+        // Monthly: tasks completed this month vs last month
+        var monthlyCount = allTasks.Count(t => t.CompletedAt.HasValue && t.CompletedAt.Value.Date >= startOfMonth);
+        var lastMonthCount = allTasks.Count(t => t.CompletedAt.HasValue && t.CompletedAt.Value.Date >= startOfLastMonth && t.CompletedAt.Value.Date < startOfMonth);
+        var monthlyTrend = monthlyCount - lastMonthCount;
 
         // Calculate completion percentage
         var completionPercentage = totalTasks > 0 ? (decimal)completedTasks / totalTasks * 100 : 0;
 
-        // Weekly activity data (last 7 days)
+        // Weekly activity data (last 7 days) — tasks completed per day
         var weeklyActivity = new List<WeeklyActivityDto>();
         for (int i = 6; i >= 0; i--)
         {
             var day = now.Date.AddDays(-i);
             var dayName = day.ToString("ddd");
-            
-            var completedOnDay = allTasks.Count(t => t.Completed && t.Goal.CreatedAt.Date == day);
-            var addedOnDay = allTasks.Count(t => t.Goal.CreatedAt.Date == day);
+
+            var completedOnDay = allTasks.Count(t => t.CompletedAt.HasValue && t.CompletedAt.Value.Date == day);
+            var addedOnDay = allTasks.Count(t => t.CreatedAt.Date == day);
 
             weeklyActivity.Add(new WeeklyActivityDto
             {
@@ -93,13 +106,16 @@ public class GetDashboardStatsQueryHandler : IRequestHandler<GetDashboardStatsQu
 
         return new DashboardStatsDto
         {
-            DailyTaskCount = dailyTasks,
-            WeeklyTaskCount = weeklyTasks,
-            MonthlyTaskCount = monthlyTasks,
+            DailyTaskCount = dailyCount,
+            WeeklyTaskCount = weeklyCount,
+            MonthlyTaskCount = monthlyCount,
             TotalTasks = totalTasks,
             CompletedTasks = completedTasks,
             PendingTasks = pendingTasks,
             CompletionPercentage = Math.Round(completionPercentage, 1),
+            DailyTrend = dailyTrend,
+            WeeklyTrend = weeklyTrend,
+            MonthlyTrend = monthlyTrend,
             WeeklyActivity = weeklyActivity,
             WorkCapacity = workCapacity,
             CurrentGoalProgress = goalProgress

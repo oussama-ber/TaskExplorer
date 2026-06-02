@@ -1,27 +1,32 @@
 import React from 'react';
 import { StatCard } from './StatCard';
-import { TrendingUp } from 'lucide-react';
+import { TrendingUp, ChevronDown } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAppStore } from '../../store/useAppStore';
 import { TaskList } from '../tasks/TaskList';
 import { DashboardCharts } from './DashboardCharts';
 
 export const Dashboard: React.FC = () => {
-    const { tasks, activeGoalId, goals, viewMode, setViewMode, toggleCreateTaskModal, dashboardStats } = useAppStore();
+    const { tasks, goals, viewMode, setViewMode, toggleCreateTaskModal, dashboardStats, fetchDashboardStats, fetchAllTasks } = useAppStore();
     const [filter, setFilter] = React.useState<'all' | 'high' | 'due' | 'completed'>('all');
+    const [selectedGoalId, setSelectedGoalId] = React.useState<string | null>(null);
 
-    const activeGoal = goals.find(g => g.id === activeGoalId);
+    React.useEffect(() => {
+        fetchDashboardStats();
+        fetchAllTasks();
+    }, []);
+
+    const selectedGoal = goals.find(g => g.id === selectedGoalId);
 
     // Filter tasks
     const filteredTasks = tasks.filter(t => {
-        // 1. Filter by Goal
-        if (activeGoalId && t.goalId !== activeGoalId) return false;
+        // 1. Filter by selected goal (null = all goals)
+        if (selectedGoalId && t.goalId !== selectedGoalId) return false;
 
         // 2. Filter by Tab
         if (filter === 'high') return t.priority === 'HIGH';
-        if (filter === 'due') return t.dueDate && new Date(t.dueDate) <= new Date(); // Simplified 'due soon'
+        if (filter === 'due') return t.dueDate && new Date(t.dueDate) <= new Date();
         if (filter === 'completed') return t.completed;
-        if (filter === 'all') return true; // Show all (active and completed? or just active? Usually all)
         return true;
     });
 
@@ -34,25 +39,41 @@ export const Dashboard: React.FC = () => {
                 <StatCard
                     title="Daily"
                     value={dashboardStats?.dailyTaskCount ?? 0}
-                    trend={{ value: "+2", isPositive: true, label: "vs yest" }}
+                    trend={{
+                        value: dashboardStats ? (dashboardStats.dailyTrend >= 0 ? `+${dashboardStats.dailyTrend}` : `${dashboardStats.dailyTrend}`) : '—',
+                        isPositive: (dashboardStats?.dailyTrend ?? 0) >= 0,
+                        label: "vs yesterday"
+                    }}
                     icon={<div className="bg-blue-50 dark:bg-blue-900/20 p-2 rounded-lg text-primary dark:text-blue-400"><TrendingUp size={20} /></div>}
                 />
                 <StatCard
                     title="Weekly"
                     value={dashboardStats?.weeklyTaskCount ?? 0}
-                    trend={{ value: "+12%", isPositive: true, label: "vs last wk" }}
+                    trend={{
+                        value: dashboardStats ? (dashboardStats.weeklyTrend >= 0 ? `+${dashboardStats.weeklyTrend}` : `${dashboardStats.weeklyTrend}`) : '—',
+                        isPositive: (dashboardStats?.weeklyTrend ?? 0) >= 0,
+                        label: "vs last week"
+                    }}
                     icon={<div className="bg-purple-50 dark:bg-purple-900/20 p-2 rounded-lg text-purple-600 dark:text-purple-400"><TrendingUp size={20} /></div>}
                 />
                 <StatCard
                     title="Monthly"
                     value={dashboardStats?.monthlyTaskCount ?? 0}
-                    trend={{ value: "-5%", isPositive: false, label: "vs last mo" }}
+                    trend={{
+                        value: dashboardStats ? (dashboardStats.monthlyTrend >= 0 ? `+${dashboardStats.monthlyTrend}` : `${dashboardStats.monthlyTrend}`) : '—',
+                        isPositive: (dashboardStats?.monthlyTrend ?? 0) >= 0,
+                        label: "vs last month"
+                    }}
                     icon={<div className="bg-orange-50 dark:bg-orange-900/20 p-2 rounded-lg text-orange-600 dark:text-orange-400"><TrendingUp size={20} /></div>}
                 />
                 <StatCard
                     title="Total Tasks"
                     value={dashboardStats?.totalTasks ?? tasks.length}
-                    trend={{ value: "Total", isPositive: true, label: "All time" }}
+                    trend={{
+                        value: dashboardStats ? `${dashboardStats.completedTasks} done` : '—',
+                        isPositive: true,
+                        label: "All time"
+                    }}
                     icon={<div className="bg-green-50 dark:bg-green-900/20 p-2 rounded-lg text-success dark:text-green-400"><TrendingUp size={20} /></div>}
                 />
             </div>
@@ -63,9 +84,24 @@ export const Dashboard: React.FC = () => {
             {/* Main Content Area */}
             <div className="mt-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-                    <h2 className="text-2xl font-bold text-text-primary dark:text-dark-text-primary">
-                        {activeGoal ? `${activeGoal.title} - Tasks` : 'All Tasks'}
-                    </h2>
+                    <div className="flex items-center gap-3">
+                        <h2 className="text-2xl font-bold text-text-primary dark:text-dark-text-primary">
+                            {selectedGoal ? `${selectedGoal.title} — Tasks` : 'All Goals — Tasks'}
+                        </h2>
+                        <div className="relative">
+                            <select
+                                value={selectedGoalId ?? ''}
+                                onChange={(e) => setSelectedGoalId(e.target.value || null)}
+                                className="appearance-none bg-white dark:bg-dark-card-bg border border-[#d0d7de] dark:border-[#30363d] rounded-md pl-3 pr-8 py-1.5 text-sm text-text-primary dark:text-dark-text-primary focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+                            >
+                                <option value="">All Goals</option>
+                                {goals.map(g => (
+                                    <option key={g.id} value={g.id}>{g.title}</option>
+                                ))}
+                            </select>
+                            <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-text-secondary dark:text-dark-text-secondary pointer-events-none" />
+                        </div>
+                    </div>
 
                     <div className="flex items-center gap-2">
                         <button

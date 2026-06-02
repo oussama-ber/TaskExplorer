@@ -14,6 +14,12 @@ obj/
 .idea/
 .nuget/
 
+# ASP.NET Core secrets & local config overrides
+# Run: dotnet user-secrets set "JwtSettings:Secret" "..." --project TaskExplorer.API
+# Run: dotnet user-secrets set "ConnectionStrings:DefaultConnection" "..." --project TaskExplorer.API
+appsettings.Development.json
+appsettings.*.local.json
+
 # Node.js / React
 node_modules/
 dist/

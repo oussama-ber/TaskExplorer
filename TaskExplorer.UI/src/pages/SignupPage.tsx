@@ -1,15 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ParticleBackground } from '../components/common/ParticleBackground';
-import { Zap, Mail, Lock, User, ArrowRight } from 'lucide-react';
+import { Zap, Mail, Lock, User, ArrowRight, AlertCircle, RefreshCw } from 'lucide-react';
+import { useAuthStore } from '../store/useAuthStore';
 
 export const SignupPage: React.FC = () => {
     const navigate = useNavigate();
+    const { register, isLoading, error } = useAuthStore();
+    const [fullName, setFullName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // In a real app, handle registration here
-        navigate('/dashboard');
+        try {
+            await register({ email, password, fullName });
+            navigate('/onboarding');
+        } catch (err) {
+            console.error('Registration failed:', err);
+        }
     };
 
     return (
@@ -31,6 +40,14 @@ export const SignupPage: React.FC = () => {
                         <p className="text-sm text-gray-400">Start your productivity journey today.</p>
                     </div>
 
+                    {/* Error Display */}
+                    {error && (
+                        <div className="mb-6 p-3 bg-red-500/10 border border-red-500/50 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+                            <AlertCircle className="text-red-500 shrink-0" size={18} />
+                            <p className="text-sm text-red-200">{error}</p>
+                        </div>
+                    )}
+
                     {/* Form */}
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="space-y-1">
@@ -39,6 +56,8 @@ export const SignupPage: React.FC = () => {
                                 <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
                                 <input
                                     type="text"
+                                    value={fullName}
+                                    onChange={(e) => setFullName(e.target.value)}
                                     placeholder="John Doe"
                                     className="w-full bg-[#0d1117]/50 border border-gray-600 rounded-xl py-3 pl-10 pr-4 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                                     required
@@ -52,6 +71,8 @@ export const SignupPage: React.FC = () => {
                                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
                                 <input
                                     type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
                                     placeholder="name@company.com"
                                     className="w-full bg-[#0d1117]/50 border border-gray-600 rounded-xl py-3 pl-10 pr-4 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                                     required
@@ -65,6 +86,8 @@ export const SignupPage: React.FC = () => {
                                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
                                 <input
                                     type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
                                     placeholder="Create a password"
                                     className="w-full bg-[#0d1117]/50 border border-gray-600 rounded-xl py-3 pl-10 pr-4 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                                     required
@@ -74,10 +97,17 @@ export const SignupPage: React.FC = () => {
 
                         <button
                             type="submit"
-                            className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-blue-600 text-white font-bold py-3 rounded-xl transition-all hover:scale-[1.02] shadow-[0_0_20px_rgba(37,99,235,0.3)] mt-2"
+                            disabled={isLoading}
+                            className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-all hover:scale-[1.02] shadow-[0_0_20px_rgba(37,99,235,0.3)] mt-2"
                         >
-                            Create Account
-                            <ArrowRight size={18} />
+                            {isLoading ? (
+                                <RefreshCw className="w-5 h-5 animate-spin" />
+                            ) : (
+                                <>
+                                    Create Account
+                                    <ArrowRight size={18} />
+                                </>
+                            )}
                         </button>
                     </form>
 

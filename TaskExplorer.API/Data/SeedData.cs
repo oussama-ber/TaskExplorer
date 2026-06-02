@@ -13,8 +13,8 @@ public static class SeedData
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
 
-        // Ensure database is created
-        await context.Database.EnsureCreatedAsync();
+        // Ensure migrations are applied (do not use EnsureCreatedAsync which conflicts with migrations)
+        await context.Database.MigrateAsync();
 
         // Check if temp user already exists
         var tempUser = await userManager.FindByIdAsync("temp-user-1");

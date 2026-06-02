@@ -326,7 +326,6 @@ export const useAppStore = create<AppState>()(
 
             addGoalWithTasks: async (goalData, taskTitles) => {
                 try {
-                    // Remove id and userId if they exist since backend handles them
                     const goalPayload = { ...goalData } as any;
                     delete goalPayload.id;
                     delete goalPayload.userId;
@@ -345,6 +344,9 @@ export const useAppStore = create<AppState>()(
                         });
                     }
                     await get().fetchGoals();
+                    // Set the new goal as active and load its tasks into the store
+                    set({ activeGoalId: goalId });
+                    await get().fetchTasks(goalId);
                 } catch (err: any) {
                     set({ error: err.message });
                 }

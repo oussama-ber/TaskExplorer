@@ -50,7 +50,7 @@ function App() {
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    let inactivityTimer: any;
+    let inactivityTimer: ReturnType<typeof setTimeout>;
 
     const resetTimer = () => {
       clearTimeout(inactivityTimer);

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useAppStore } from '../store/useAppStore';
+import { tasksApi } from '../services/api';
+import type { Task } from '../types';
 import { clsx } from 'clsx';
 import {
     LayoutGrid,
@@ -10,31 +12,43 @@ import {
     Clock,
     ChevronDown,
     ChevronRight,
-    Search
+    Search,
+    Loader2
 } from 'lucide-react';
 import { ActionsMenu } from '../components/common/ActionsMenu';
 import { TaskItem } from '../components/tasks/TaskItem';
 
 export const GoalsPage: React.FC = () => {
-    const { goals, tasks, openEditGoalModal, deleteGoal, toggleCreateGoalModal, openGoalDetail, openCreateTaskModal } = useAppStore();
+    const { goals, openEditGoalModal, deleteGoal, toggleCreateGoalModal, openGoalDetail, openCreateTaskModal } = useAppStore();
     const [view, setView] = useState<'grid' | 'list'>('grid');
     const [searchQuery, setSearchQuery] = useState('');
     const [expandedGoals, setExpandedGoals] = useState<Set<string>>(new Set());
+    const [tasksByGoal, setTasksByGoal] = useState<Record<string, Task[]>>({});
+    const [loadingGoalTasks, setLoadingGoalTasks] = useState<Set<string>>(new Set());
 
-    // KPIs
+    // KPIs derived from goals (accurate across all goals, not just the active one)
     const totalGoals = goals.length;
     const completedGoals = goals.filter(g => g.completedTasks === g.totalTasks && g.totalTasks > 0).length;
-    const totalTasks = tasks.length;
-    const overallProgress = totalTasks > 0
-        ? Math.round((tasks.filter(t => t.completed).length / totalTasks) * 100)
-        : 0;
+    const totalTasks = goals.reduce((sum, g) => sum + g.totalTasks, 0);
+    const totalCompleted = goals.reduce((sum, g) => sum + g.completedTasks, 0);
+    const overallProgress = totalTasks > 0 ? Math.round((totalCompleted / totalTasks) * 100) : 0;
 
-    const toggleGoalExpansion = (goalId: string) => {
+    const toggleGoalExpansion = async (goalId: string) => {
         const newExpanded = new Set(expandedGoals);
         if (newExpanded.has(goalId)) {
             newExpanded.delete(goalId);
         } else {
             newExpanded.add(goalId);
+            // Always fetch fresh tasks when expanding a goal
+            setLoadingGoalTasks(prev => new Set([...prev, goalId]));
+            try {
+                const response = await tasksApi.getByGoal(goalId);
+                setTasksByGoal(prev => ({ ...prev, [goalId]: response.data }));
+            } catch (e) {
+                console.error('Failed to load tasks for goal:', goalId, e);
+            } finally {
+                setLoadingGoalTasks(prev => { const s = new Set(prev); s.delete(goalId); return s; });
+            }
         }
         setExpandedGoals(newExpanded);
     };
@@ -140,7 +154,7 @@ export const GoalsPage: React.FC = () => {
             {view === 'grid' ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {filteredGoals.map(goal => {
-                        const goalTasks = tasks.filter(t => t.goalId === goal.id);
+                        const goalTasks = tasksByGoal[goal.id] || [];
                         const progress = goal.totalTasks > 0 ? (goal.completedTasks / goal.totalTasks) * 100 : 0;
                         const isExpanded = expandedGoals.has(goal.id);
 
@@ -203,13 +217,17 @@ export const GoalsPage: React.FC = () => {
                                         className="w-full flex items-center justify-between p-4 text-xs font-semibold text-text-secondary dark:text-dark-text-secondary hover:text-primary transition-colors"
                                     >
                                         <span>{isExpanded ? 'Hide Tasks' : 'Show Tasks'}</span>
-                                        {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                                        {loadingGoalTasks.has(goal.id)
+                                            ? <Loader2 size={16} className="animate-spin" />
+                                            : isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                                     </button>
 
                                     {isExpanded && (
                                         <div className="px-4 pb-4 space-y-2 border-t border-light-gray dark:border-dark-border pt-4">
-                                            {goalTasks.length > 0 ? (
-                                                goalTasks.slice(0, 3).map(task => ( // Show top 3
+                                            {loadingGoalTasks.has(goal.id) ? (
+                                                <p className="text-xs text-gray-400 italic">Loading tasks...</p>
+                                            ) : goalTasks.length > 0 ? (
+                                                goalTasks.slice(0, 3).map(task => (
                                                     <div key={task.id} className="flex items-center gap-2 text-sm text-text-primary dark:text-dark-text-primary">
                                                         <div className={`w-2 h-2 rounded-full ${task.completed ? 'bg-green-500' : 'bg-gray-300'}`}></div>
                                                         <span className={task.completed ? 'line-through text-gray-400' : ''}>{task.title}</span>
@@ -236,7 +254,7 @@ export const GoalsPage: React.FC = () => {
                     {filteredGoals.map(goal => {
                         const isExpanded = expandedGoals.has(goal.id);
                         const progress = goal.totalTasks > 0 ? (goal.completedTasks / goal.totalTasks) * 100 : 0;
-                        const goalTasks = tasks.filter(t => t.goalId === goal.id);
+                        const goalTasks = tasksByGoal[goal.id] || [];
 
                         return (
                             <div key={goal.id} className={clsx(
@@ -278,7 +296,9 @@ export const GoalsPage: React.FC = () => {
                                     </div>
 
                                     <div className="text-gray-400">
-                                        {isExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+                                        {loadingGoalTasks.has(goal.id)
+                                            ? <Loader2 size={20} className="animate-spin" />
+                                            : isExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
                                     </div>
                                 </div>
 
@@ -286,12 +306,15 @@ export const GoalsPage: React.FC = () => {
                                     <div className="border-t border-light-gray dark:border-dark-border bg-gray-50 dark:bg-gray-900/20 p-4">
                                         <h4 className="text-xs font-bold text-text-secondary dark:text-dark-text-secondary uppercase mb-3 px-2">Tasks</h4>
                                         <div className="space-y-2">
-                                            {goalTasks.map(task => (
+                                            {loadingGoalTasks.has(goal.id) ? (
+                                                <p className="text-sm text-gray-500 px-2">Loading tasks...</p>
+                                            ) : goalTasks.length > 0 ? goalTasks.map(task => (
                                                 <div key={task.id} className="bg-white dark:bg-dark-card-bg p-2 rounded-lg border border-light-gray dark:border-dark-border">
                                                     <TaskItem task={task} />
                                                 </div>
-                                            ))}
-                                            {goalTasks.length === 0 && <p className="text-sm text-gray-500 px-2">No tasks added to this goal.</p>}
+                                            )) : (
+                                                <p className="text-sm text-gray-500 px-2">No tasks added to this goal.</p>
+                                            )}
                                         </div>
                                     </div>
                                 )}

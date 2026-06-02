@@ -87,6 +87,8 @@ export interface AuthResponse {
 
 export const authApi = {
     login: (credentials: any) => api.post<AuthResponse>('/auth/login', credentials),
+    register: (data: { email: string; password: string; fullName: string }) =>
+        api.post<AuthResponse>('/auth/register', data),
     refreshToken: (tokens: { accessToken: string; refreshToken: string }) =>
         api.post<AuthResponse>('/auth/refresh-token', tokens),
 };

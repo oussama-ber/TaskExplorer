@@ -29,9 +29,12 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<ActionResult<bool>> Register(RegisterCommand command)
+    public async Task<ActionResult<AuthResponseDto>> Register(RegisterCommand command)
     {
         var result = await _mediator.Send(command);
+        if (result == null)
+            return BadRequest(new { message = "Registration failed. Email may already be in use." });
+
         return Ok(result);
     }
 

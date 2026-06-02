@@ -5,7 +5,9 @@ import { CreateGoalModal } from '../dashboard/CreateGoalModal';
 import { CreateTaskModal } from '../tasks/CreateTaskModal';
 import { GoalDetailModal } from '../goals/GoalDetailModal';
 import { TaskDetailModal } from '../tasks/TaskDetailModal';
+import { NotificationToastContainer } from '../notifications/NotificationToast';
 import { useAppStore } from '../../store/useAppStore';
+import { useNotificationWatcher } from '../../hooks/useNotificationWatcher';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -13,6 +15,7 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
     const { theme } = useAppStore();
+    useNotificationWatcher();
 
     useEffect(() => {
         if (theme === 'dark') {
@@ -34,6 +37,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             <CreateTaskModal />
             <GoalDetailModal />
             <TaskDetailModal />
+            <NotificationToastContainer />
         </div>
     );
 };

@@ -4,6 +4,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useState, useRef, useEffect } from 'react';
 import { clsx } from 'clsx';
+import { NotificationBell } from '../notifications/NotificationBell';
 
 export const TopNav: React.FC = () => {
     const { toggleCreateGoalModal, theme, toggleTheme } = useAppStore();
@@ -99,6 +100,8 @@ export const TopNav: React.FC = () => {
                     >
                         {theme === 'light' ? '🌙' : '☀️'}
                     </button>
+
+                    <NotificationBell />
 
                     <button
                         onClick={toggleCreateGoalModal}

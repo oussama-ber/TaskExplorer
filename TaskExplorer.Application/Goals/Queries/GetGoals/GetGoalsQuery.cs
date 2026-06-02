@@ -42,6 +42,7 @@ public class GoalDto
     public string? Description { get; set; }
     public string Icon { get; set; } = "🎯";
     public string? Category { get; set; }
+    public string? Tag => Category;
     public List<string> Tags { get; set; } = new();
     public bool IsCompleted { get; set; }
     public int TotalTasks { get; set; }

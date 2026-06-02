@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAppStore } from '../store/useAppStore';
 import { tasksApi } from '../services/api';
 import type { Task } from '../types';
+
 import { clsx } from 'clsx';
 import {
     LayoutGrid,
@@ -19,12 +20,26 @@ import { ActionsMenu } from '../components/common/ActionsMenu';
 import { TaskItem } from '../components/tasks/TaskItem';
 
 export const GoalsPage: React.FC = () => {
-    const { goals, openEditGoalModal, deleteGoal, toggleCreateGoalModal, openGoalDetail, openCreateTaskModal } = useAppStore();
+    const { goals, openEditGoalModal, deleteGoal, toggleCreateGoalModal, openGoalDetail, openCreateTaskModal, fetchGoals } = useAppStore();
     const [view, setView] = useState<'grid' | 'list'>('grid');
     const [searchQuery, setSearchQuery] = useState('');
     const [expandedGoals, setExpandedGoals] = useState<Set<string>>(new Set());
     const [tasksByGoal, setTasksByGoal] = useState<Record<string, Task[]>>({});
     const [loadingGoalTasks, setLoadingGoalTasks] = useState<Set<string>>(new Set());
+
+    const handleToggleTask = async (task: Task) => {
+        const updated = { ...task, completed: !task.completed };
+        try {
+            await tasksApi.update(task.id, updated);
+            setTasksByGoal(prev => ({
+                ...prev,
+                [task.goalId]: (prev[task.goalId] || []).map(t => t.id === task.id ? updated : t)
+            }));
+            fetchGoals();
+        } catch (e) {
+            console.error('Failed to toggle task:', e);
+        }
+    };
 
     // KPIs derived from goals (accurate across all goals, not just the active one)
     const totalGoals = goals.length;
@@ -174,9 +189,9 @@ export const GoalsPage: React.FC = () => {
                                     </div>
                                     <div className="flex items-center gap-2 mb-1">
                                         <h3 className="text-lg font-bold text-text-primary dark:text-dark-text-primary truncate">{goal.title}</h3>
-                                        {goal.tag && (
+                                        {(goal.category || goal.tag) && (
                                             <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 flex-shrink-0">
-                                                {goal.tag}
+                                                {goal.category || goal.tag}
                                             </span>
                                         )}
                                     </div>
@@ -310,7 +325,7 @@ export const GoalsPage: React.FC = () => {
                                                 <p className="text-sm text-gray-500 px-2">Loading tasks...</p>
                                             ) : goalTasks.length > 0 ? goalTasks.map(task => (
                                                 <div key={task.id} className="bg-white dark:bg-dark-card-bg p-2 rounded-lg border border-light-gray dark:border-dark-border">
-                                                    <TaskItem task={task} />
+                                                    <TaskItem task={task} onToggle={() => handleToggleTask(task)} />
                                                 </div>
                                             )) : (
                                                 <p className="text-sm text-gray-500 px-2">No tasks added to this goal.</p>

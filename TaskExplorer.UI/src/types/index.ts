@@ -7,7 +7,7 @@ export interface User {
     email: string;
     availability?: AvailabilitySettings;
     onboardingCompleted: boolean;
-    userExperience?: 'EXPERIENCED' | 'HAS_PLAN' | 'NEWBIE'; // familiar, already has plan, or no idea
+    userExperience?: 'EXPERIENCED' | 'HAS_PLAN' | 'NEWBIE';
 }
 
 export interface GoalTemplate {
@@ -21,23 +21,24 @@ export interface GoalTemplate {
 }
 
 export interface AvailabilitySettings {
-    sleepStart: string; // "HH:mm"
-    sleepEnd: string; // "HH:mm"
+    sleepStart: string;
+    sleepEnd: string;
     age: number;
-    breakTimeMinutes: number; // break between tasks
+    breakTimeMinutes: number;
 }
 
 export interface Goal {
     id: string;
     userId: string;
     title: string;
-    icon: string; // Emoji character or lucide icon name
+    icon: string;
     totalTasks: number;
     completedTasks: number;
-    color?: string; // Optional custom color
+    color?: string;
     description?: string;
     tags?: string[];
     tag?: string;
+    category?: string;
 }
 
 export interface Task {
@@ -45,32 +46,76 @@ export interface Task {
     goalId: string;
     title: string;
     completed: boolean;
+    completedAt?: string;
     priority: Priority;
-    category: string; // e.g., "Content Strategy & Planning"
-    dueDate?: string; // ISO date string
+    category: string;
+    dueDate?: string;
     description?: string;
-    estimatedTime?: string; // e.g. "2h", "30m"
-    startTime?: string; // "HH:mm"
+    estimatedTime?: string;
+    startTime?: string;
     notificationsEnabled: boolean;
-    isEnabled: boolean; // For the toggle switch
+    isEnabled: boolean;
     tag?: string;
 }
 
 export interface DashboardStats {
-    tasksCompletedToday: number;
-    tasksCompletedAvg: number; // e.g. 20
-    weeklyVelocity: number; // percentage change
-    weeklyVelocityComparisons: string; // "-2% prev week"
+    dailyTaskCount: number;
+    weeklyTaskCount: number;
+    monthlyTaskCount: number;
+    totalTasks: number;
+    completedTasks: number;
+    pendingTasks: number;
+    completionPercentage: number;
+    dailyTrend: number;
+    weeklyTrend: number;
+    monthlyTrend: number;
+    weeklyActivity: { name: string; completed: number; added: number }[];
+    workCapacity: { name: string; value: number; color: string }[];
+    currentGoalProgress?: {
+        goalTitle: string;
+        completedTasks: number;
+        totalTasks: number;
+        percentage: number;
+    };
 }
 
 export interface RoutineBlock {
     id: string;
     title: string;
     color: string;
-    startTime: string; // "HH:mm"
-    endTime: string; // "HH:mm"
-    days: number[]; // 0 for Sunday, 1 for Monday, etc.
+    startTime: string;
+    endTime: string;
+    days: number[];
     allowMultitasking: boolean;
     multitaskingNote?: string;
-    multitaskingLimit?: string; // e.g., "1h"
+    multitaskingLimit?: string;
 }
+
+export interface DayActivity {
+    date: string;
+    dayLabel: string;
+    count: number;
+}
+
+export interface HabitItem {
+    goalTitle: string;
+    completedCount: number;
+    totalCount: number;
+    percentage: number;
+}
+
+export interface HabitScore {
+    score: number;
+    streak: number;
+    consistencyScore: number;
+    completionScore: number;
+    priorityScore: number;
+    goalScore: number;
+    activeDaysLast14: number;
+    totalTasksCompleted: number;
+    totalTasks: number;
+    weeklyActivity: DayActivity[];
+    goodHabits: HabitItem[];
+    badHabits: HabitItem[];
+}
+

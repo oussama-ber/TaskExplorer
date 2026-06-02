@@ -37,9 +37,9 @@ export const GoalDetailModal: React.FC = () => {
                                     <Target size={12} />
                                     Goal
                                 </span>
-                                {goal.tag && (
+                                {(goal.category || goal.tag) && (
                                     <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border border-indigo-200">
-                                        {goal.tag}
+                                        {goal.category || goal.tag}
                                     </span>
                                 )}
                                 {goal.tags?.map(tag => (

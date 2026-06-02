@@ -37,7 +37,7 @@ export const CreateGoalModal: React.FC = () => {
                 setIcon(goalToEdit.icon);
                 setSelectedColor(goalToEdit.color || COLORS[0]);
                 setTags(goalToEdit.tags || []);
-                setTag(goalToEdit.tag || '');
+                setTag(goalToEdit.category || goalToEdit.tag || '');
             }
         } else if (isCreateGoalModalOpen) {
             // Reset for create mode
@@ -102,6 +102,7 @@ export const CreateGoalModal: React.FC = () => {
             color: selectedColor,
             tags,
             tag: tag.trim() || undefined,
+            category: tag.trim() || undefined,
         };
 
         if (editingGoalId) {

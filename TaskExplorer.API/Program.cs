@@ -37,7 +37,7 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend",
-        policy => policy.WithOrigins(["http://localhost:5173", "http://localhost:5174"]) // Vite default port
+        policy => policy.WithOrigins(["https://taskexplorer.netlify.app", "http://localhost:5173", "http://localhost:5174"]) // Vite default port
                         .AllowAnyHeader()
                         .AllowAnyMethod());
 });

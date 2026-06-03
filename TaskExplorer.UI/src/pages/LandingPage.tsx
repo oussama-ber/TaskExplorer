@@ -117,8 +117,8 @@ export const LandingPage: React.FC = () => {
                         <p className="text-gray-400 mb-8 max-w-xl mx-auto">
                             Have questions or feedback? We'd love to hear from you. taskexplorer is constantly evolving based on user needs.
                         </p>
-                        <a href="mailto:support@taskexplorer.com" className="inline-flex items-center gap-2 text-white font-medium hover:text-blue-400 transition-colors">
-                            support@taskexplorer.com
+                        <a href="mailto:oussema.benrejab@gmail.com" className="inline-flex items-center gap-2 text-white font-medium hover:text-blue-400 transition-colors">
+                            oussema.benrejab@gmail.com
                             <ArrowRight size={16} />
                         </a>
                     </div>

@@ -7,6 +7,8 @@
   </p>
 </p>
 
+> ⚠️ **Cold Start Notice:** The backend is hosted on a free tier service that spins down after inactivity.  
+> On first login, please allow **~60 seconds** for the server to initialize.
 
 ---
 

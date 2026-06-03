@@ -23,7 +23,7 @@ export const SettingsPage: React.FC = () => {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="font-medium text-text-primary dark:text-dark-text-primary">Email Address</p>
-                                <p className="text-sm text-text-secondary dark:text-dark-text-secondary">{user.email}</p>
+                                <p className="text-sm text-text-secondary dark:text-dark-text-secondary">{user?.email || ''}</p>
                             </div>
                             <button className="text-primary text-sm font-medium hover:underline">Change</button>
                         </div>

@@ -80,7 +80,7 @@ export function useNotificationWatcher() {
     const accessToken = useAuthStore((s) => s.accessToken);
 
     // Keep a ref to the latest callback so the interval never needs to be recreated
-    const runCheckRef = useRef<() => Promise<void>>();
+    const runCheckRef = useRef<(() => Promise<void>) | undefined>(undefined);
     runCheckRef.current = async () => {
         if (!accessToken) return;
         try {

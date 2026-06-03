@@ -29,7 +29,7 @@ interface AppState {
     setViewMode: (mode: 'comfortable' | 'compact') => void;
     toggleTaskCompletion: (taskId: string) => void;
     addTask: (task: Omit<Task, 'id'>) => void;
-    addGoal: (goal: Omit<Goal, 'id' | 'totalTasks' | 'completedTasks'>) => void;
+    addGoal: (goal: Omit<Goal, 'id' | 'userId' | 'totalTasks' | 'completedTasks'>) => void;
 
     // UI State
     isCreateGoalModalOpen: boolean;

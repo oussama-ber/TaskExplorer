@@ -45,7 +45,7 @@ export const CreateTaskModal: React.FC = () => {
     };
 
     const warning = React.useMemo(() => {
-        if (!dueDate || !estimatedTime) return null;
+        if (!dueDate || !estimatedTime || !user) return null;
 
         const dayTasks = tasks.filter(t => t.dueDate === dueDate && t.id !== editingTaskId);
         const currentTaskMins = parseEstimatedTime(estimatedTime);

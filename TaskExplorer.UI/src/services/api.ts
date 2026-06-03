@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useAuthStore } from '../store/useAuthStore';
 import type { Goal, Task, RoutineBlock, User, HabitScore } from '../types';
 
-const API_BASE_URL = 'http://localhost:5255/api';
+const API_BASE_URL = 'https://taskexplorer.onrender.com/api';
 
 const api = axios.create({
     baseURL: API_BASE_URL,
@@ -95,7 +95,7 @@ export const authApi = {
 
 export const goalsApi = {
     getAll: () => api.get<Goal[]>('/goals'),
-    create: (goal: Omit<Goal, 'id' | 'totalTasks' | 'completedTasks'>) =>
+    create: (goal: Omit<Goal, 'id' | 'userId' | 'totalTasks' | 'completedTasks'>) =>
         api.post<string>('/goals', goal),
     update: (id: string, goal: Goal) => api.put(`/goals/${id}`, goal),
     delete: (id: string) => api.delete(`/goals/${id}`),
@@ -123,6 +123,9 @@ export interface DashboardStats {
     completedTasks: number;
     pendingTasks: number;
     completionPercentage: number;
+    dailyTrend: number;
+    weeklyTrend: number;
+    monthlyTrend: number;
     weeklyActivity: Array<{ name: string; completed: number; added: number }>;
     workCapacity: Array<{ name: string; value: number; color: string }>;
     currentGoalProgress: {

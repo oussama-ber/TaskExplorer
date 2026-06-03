@@ -23,6 +23,13 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+// Overwrite JWT Secret configuration from environment variable if present
+var jwtSecretEnv = Environment.GetEnvironmentVariable("JWT_SECRET");
+if (!string.IsNullOrEmpty(jwtSecretEnv))
+{
+    builder.Configuration["JwtSettings:Secret"] = jwtSecretEnv;
+}
+
 // Register Clean Architecture Layers
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -36,8 +43,7 @@ builder.Services.AddCors(options =>
 });
 
 var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>()!;
-var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") ?? jwtSettings.Secret;
-var key = Encoding.UTF8.GetBytes(jwtSecret);
+var key = Encoding.UTF8.GetBytes(jwtSettings.Secret);
 
 builder.Services.AddAuthentication(options =>
 {
